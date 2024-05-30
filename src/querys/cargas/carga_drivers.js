@@ -66,7 +66,7 @@ async function main() {
     for (const driver of drivers){
         await insertDrivers(driver);
     }
-    
+    console.log('Carga dos pilotos foi efetuada com sucesso!')
     await db.end();
 }
 
