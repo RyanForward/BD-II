@@ -47,11 +47,35 @@ async function getData(){
 
 async function main() {
     const dataSessions = await getData();
-    await db.connect()
+
+    let sessions = []
     for (const item of dataSessions){
+        if (
+            item.session_key == null ||
+            item.session_name == null ||
+            item.session_type == null ||
+            item.circuit_short_name == null ||
+            item.country_key == null ||
+            item.country_name == null ||
+            item.date_end == null ||
+            item.date_start == null ||
+            item.gmt_offset == null ||
+            item.location == null ||
+            item.year == null
+        ) {
+            continue; 
+        }
+        sessions.push(item)
+    }
+
+    await db.connect()
+
+    for (const item of sessions){
         await insertSession(item);
     }
+
     console.log('Dados da sessão inseridos no banco de dados com sucesso!');
+    
     await db.end();
 }
 
