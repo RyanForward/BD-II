@@ -1,24 +1,26 @@
 const db = require('../../conn');
 const { generateID } = require('../tools/idGenerator');
-const url = 'https://api.openf1.org/v1/team_radio?'
+const url = 'https://api.openf1.org/v1/weather?'
 
-async function insertRadios(id, radioData){
+async function insertWeather(id, weatherData){
     try{
         await db.query(
             `INSERT INTO 
-            radio(id, date, driver_key, recording_url, session_key) 
+            weather(id, date, session_key, humidity, rainfall, track_temperature, wind_speed) 
             VALUES 
-            ($1, $2, $3, $4, $5)`,
+            ($1, $2, $3, $4, $5, $6, $7)`,
             [
                 id,
-                radioData.date,
-                radioData.driver_number,
-                radioData.recording_url,
-                radioData.session_key,
+                weatherData.date,
+                weatherData.session_key,
+                weatherData.humidity,
+                weatherData.rainfall,
+                weatherData.track_temperature,
+                weatherData.wind_speed,
             ]
         )
     }catch(e){
-        console.error('Erro ao tentar inserir rádio: ', e);
+        console.error('Erro ao tentar inserir clima: ', e);
     }
 }
 
@@ -40,29 +42,32 @@ async function getData(){
 
 
 async function main() {
-    const dataRadios = await getData();
-    let radios = []
-    for (const item of dataRadios){
+    const weather = await getData();
+    let clima = []
+    for (const item of weather){
         if (
             item.date == null ||
-            item.driver_number == null ||
-            item.recording_url == null ||
+            item.humidity == null ||
+            item.rainfall == null ||
+            item.track_temperature == null ||
+            item.wind_speed == null ||
             item.session_key == null
         ){
             continue; 
         }
-        radios.push(item);
+        clima.push(item);
     }
     
     await db.connect()
     let counter = 0
-    for (const radio of radios){
+
+    for (const item of clima){
         const id = generateID(counter)
         counter++;
-        await insertRadios(id, radio);
+        await insertWeather(id, item);
     }
 
-    console.log('Carga dos rádios foi efetuada com sucesso!')
+    console.log('Carga dos climas foi efetuada com sucesso!')
     await db.end();
 }
 

@@ -40,18 +40,7 @@ async function createDataBase(){
             date DATE NOT NULL,
             driver_key INTEGER NOT NULL,
             lap_number INTEGER NOT NULL,
-            pit_duration INTEGER NOT NULL,
-            session_key INTEGER NOT NULL,
-            deleted_in DATE DEFAULT NULL
-        );
-        `);
-
-        await db.query(`
-        CREATE TABLE position (
-            id BIGINT PRIMARY KEY,
-            date DATE NOT NULL,
-            driver_key INTEGER NOT NULL,
-            position INTEGER NOT NULL,
+            pit_duration NUMERIC NOT NULL,
             session_key INTEGER NOT NULL,
             deleted_in DATE DEFAULT NULL
         );
@@ -120,14 +109,6 @@ async function createDataBase(){
 
         await db.query(`
         ALTER TABLE weather ADD FOREIGN KEY (session_key) REFERENCES sessions (session_key);
-        `);
-
-        await db.query(`
-        ALTER TABLE position ADD FOREIGN KEY (driver_key) REFERENCES drivers (driver_key);
-        `);
-
-        await db.query(`
-        ALTER TABLE position ADD FOREIGN KEY (session_key) REFERENCES sessions (session_key);
         `);
 
         await db.query(`

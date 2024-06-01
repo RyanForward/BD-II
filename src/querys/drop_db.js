@@ -24,21 +24,15 @@ async function dropDataBase(){
         `);
     
         await db.query(`
-            ALTER TABLE position DROP CONSTRAINT IF EXISTS position_driver_key_fkey;
-            ALTER TABLE position DROP CONSTRAINT IF EXISTS position_session_key_fkey;
-        `);
-    
-        await db.query(`
             ALTER TABLE drivers DROP CONSTRAINT IF EXISTS drivers_session_key_fkey;
         `);
     
-        await db.query(`DROP TABLE IF EXISTS sessions`);
         await db.query(`DROP TABLE IF EXISTS radio`);
         await db.query(`DROP TABLE IF EXISTS weather`);
         await db.query(`DROP TABLE IF EXISTS pit_stop`);
         await db.query(`DROP TABLE IF EXISTS intervals`);
-        await db.query(`DROP TABLE IF EXISTS position`);
         await db.query(`DROP TABLE IF EXISTS drivers`);
+        await db.query(`DROP TABLE IF EXISTS sessions`);
     
         await db.query(`DROP TYPE IF EXISTS SESSION_TYPE`);
     

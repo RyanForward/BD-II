@@ -1,24 +1,25 @@
 const db = require('../../conn');
 const { generateID } = require('../tools/idGenerator');
-const url = 'https://api.openf1.org/v1/team_radio?'
+const url = 'https://api.openf1.org/v1/pit?'
 
-async function insertRadios(id, radioData){
+async function insertPits(id, pitData){
     try{
         await db.query(
             `INSERT INTO 
-            radio(id, date, driver_key, recording_url, session_key) 
+            pit_stop(id, date, driver_key, lap_number, pit_duration, session_key) 
             VALUES 
-            ($1, $2, $3, $4, $5)`,
+            ($1, $2, $3, $4, $5, $6)`,
             [
                 id,
-                radioData.date,
-                radioData.driver_number,
-                radioData.recording_url,
-                radioData.session_key,
+                pitData.date,
+                pitData.driver_number,
+                pitData.lap_number,
+                pitData.pit_duration,
+                pitData.session_key,
             ]
         )
     }catch(e){
-        console.error('Erro ao tentar inserir rádio: ', e);
+        console.error('Erro ao tentar inserir pit: ', e);
     }
 }
 
@@ -40,29 +41,32 @@ async function getData(){
 
 
 async function main() {
-    const dataRadios = await getData();
-    let radios = []
-    for (const item of dataRadios){
+    const pitstops = await getData();
+
+    let pits = []
+    for (const pit of pitstops){
         if (
-            item.date == null ||
-            item.driver_number == null ||
-            item.recording_url == null ||
-            item.session_key == null
+            pit.pit_duration == null ||
+            pit.date == null ||
+            pit.driver_number == null ||
+            pit.lap_number == null ||
+            pit.session_key == null
         ){
             continue; 
         }
-        radios.push(item);
+        pits.push(pit);
     }
     
     await db.connect()
     let counter = 0
-    for (const radio of radios){
+
+    for (const item of pits){
         const id = generateID(counter)
         counter++;
-        await insertRadios(id, radio);
+        await insertPits(id, item);
     }
 
-    console.log('Carga dos rádios foi efetuada com sucesso!')
+    console.log('Carga dos pit stops foi efetuada com sucesso!')
     await db.end();
 }
 
