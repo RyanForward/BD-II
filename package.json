@@ -4,6 +4,7 @@
   },
   "dependencies": {
     "crypto": "^1.0.1",
+    "node-fetch": "^3.3.2",
     "pg": "^8.11.5",
     "pg-promise": "^11.7.8",
     "short-uuid": "^5.2.0",

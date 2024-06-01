@@ -1,6 +1,7 @@
 async function getData(url) {
     try {
-        const response = await fetch(`${url}`);
+        const fetch = await import('node-fetch').then(mod => mod.default);
+        const response = await fetch(url);
         if (!response.ok) {
             throw new Error('Resposta da API não está OK. Motivo: ' + response.statusText);
         }
@@ -13,4 +14,4 @@ async function getData(url) {
     }
 }
 
-module.exports = {getData}
+module.exports = { getData };
