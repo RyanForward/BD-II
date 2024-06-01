@@ -1,4 +1,5 @@
 const db = require('../../conn');
+const { getData } = require('../tools/getData');
 const { generateID } = require('../tools/idGenerator');
 const url = 'https://api.openf1.org/v1/team_radio?'
 
@@ -22,25 +23,9 @@ async function insertRadios(id, radioData){
     }
 }
 
-async function getData(){
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Resposta da API não está OK. Motivo: ' + response.statusText);
-        }
-        
-        const jsonData = await response.json();
-        
-        return jsonData;
-    } catch (error) {
-        console.error('Erro ao contactar API: ', error);
-        return null;
-    }
-}
-
 
 async function main() {
-    const dataRadios = await getData();
+    const dataRadios = await getData(url);
     let radios = []
     for (const item of dataRadios){
         if (

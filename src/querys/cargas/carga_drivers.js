@@ -1,4 +1,5 @@
 const db = require('../../conn');
+const { getData } = require('../tools/getData');
 const url = 'https://api.openf1.org/v1/drivers?'
 
 async function insertDrivers(driversData){
@@ -24,24 +25,9 @@ async function insertDrivers(driversData){
     }
 }
 
-async function getData(){
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Resposta da API não está OK. Motivo: ' + response.statusText);
-        }
-        
-        const jsonData = await response.json();
-        
-        return jsonData;
-    } catch (error) {
-        console.error('Erro ao contactar API: ', error);
-        return null;
-    }
-}
-
 async function main() {
-    const dataDrivers = await getData();
+    const dataDrivers = await getData(url);
+    console.log(dataDrivers)
     let driversNumber = [];
     let drivers = []
     for (const item of dataDrivers){

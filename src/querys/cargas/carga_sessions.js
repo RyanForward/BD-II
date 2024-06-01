@@ -1,4 +1,5 @@
 const db = require('../../conn');
+const { getData } = require('../tools/getData');
 const url = 'https://api.openf1.org/v1/sessions?'
 
 async function insertSession(sessionData){
@@ -28,25 +29,8 @@ async function insertSession(sessionData){
     }
 }
 
-async function getData(){
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Resposta da API não está OK. Motivo: ' + response.statusText);
-        }
-        
-        const jsonData = await response.json();
-        
-        return jsonData;
-    } catch (error) {
-        console.error('Erro ao contactar API: ', error);
-        return null;
-    }
-}
-
-
 async function main() {
-    const dataSessions = await getData();
+    const dataSessions = await getData(url);
 
     let sessions = []
     for (const item of dataSessions){

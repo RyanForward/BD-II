@@ -1,4 +1,5 @@
 const db = require('../../conn');
+const { getData } = require('../tools/getData');
 const { generateID } = require('../tools/idGenerator');
 const url = 'https://api.openf1.org/v1/pit?'
 
@@ -23,25 +24,8 @@ async function insertPits(id, pitData){
     }
 }
 
-async function getData(){
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Resposta da API não está OK. Motivo: ' + response.statusText);
-        }
-        
-        const jsonData = await response.json();
-        
-        return jsonData;
-    } catch (error) {
-        console.error('Erro ao contactar API: ', error);
-        return null;
-    }
-}
-
-
 async function main() {
-    const pitstops = await getData();
+    const pitstops = await getData(url);
 
     let pits = []
     for (const pit of pitstops){
