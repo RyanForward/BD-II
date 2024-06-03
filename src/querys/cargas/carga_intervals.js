@@ -75,7 +75,7 @@ async function getAllSessions(url) {
 async function getAllDataForSessions(sessions) {
     let allData = [];
     for (const sessionKey of sessions) {
-        const url = `https://api.openf1.org/v1/intervals?session_key=${sessionKey}&interval<0.005`;
+        const url = `https://api.openf1.org/v1/intervals?session_key=${sessionKey}`;
         try {
             const data = await fetchData(url); 
             if (data && data.length > 0) {
@@ -88,7 +88,6 @@ async function getAllDataForSessions(sessions) {
     return allData; 
 }
 
-// Função principal
 async function main() {
     try {
         const sessionKeys = await getAllSessions(sessionsUrl); 
