@@ -69,11 +69,7 @@ async function insertIntervals(batch) {
 async function getAllDataForSessions(sessions) {
     let allData = [];
     for (const sessionKey of sessions) {
-<<<<<<< HEAD
-        const url = `https://api.openf1.org/v1/intervals?session_key=${sessionKey}`;
-=======
         const url = `${intervalsUrlTemplate}${sessionKey}`;
->>>>>>> ed49a5431c7e87870d4275a95dc5fdfef9df2228
         try {
             const data = await fetchData(url);
             if (data && data.length > 0) {
