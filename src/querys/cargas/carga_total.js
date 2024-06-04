@@ -1,4 +1,5 @@
 const { spawn } = require('child_process');
+const path = require('path');
 
 // Função para executar um script e retornar uma Promise que resolve quando o script termina
 function runScript(script) {
@@ -26,24 +27,20 @@ function runScript(script) {
 // Executar os scripts em sequência
 async function runAllScripts() {
     try {
-        await runScript('./carga_sessions.js');
-        console.log('Carga de sessions concluída.');
-        
-        await runScript('./carga_drivers.js');
-        console.log('Carga de drivers concluída.');
-        
-        await runScript('./carga_intervals.js');
-        console.log('Carga de intervals concluída.');
-        
-        await runScript('./carga_pit_stop.js');
-        console.log('Carga de pit stops concluída.');
-        
-        await runScript('./carga_radio.js');
-        console.log('Carga de radio concluída.');
-        
-        await runScript('./carga_weather.js');
-        console.log('Carga de weather concluída.');
-        
+        const scripts = [
+            './carga_sessions.js',
+            './carga_drivers.js',
+            './carga_pit_stop.js',
+            './carga_radio.js',
+            './carga_weather.js',
+            './carga_intervals.js'
+        ];
+
+        for (const script of scripts) {
+            await runScript(path.resolve(__dirname, script));
+            console.log(`Carga de ${path.basename(script, '.js')} concluída.`);
+        }
+
         console.log('Todas as cargas foram concluídas com sucesso!');
     } catch (error) {
         console.error('Erro ao executar as cargas:', error);
