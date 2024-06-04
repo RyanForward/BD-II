@@ -27,8 +27,8 @@ async function createDataBase(){
             id BIGINT PRIMARY KEY,
             date DATE NOT NULL,
             driver_key INTEGER NOT NULL,
-            gap_to_leader VARCHAR NOT NULL,
-            interval VARCHAR NOT NULL,
+            gap_to_leader VARCHAR(20),
+            interval VARCHAR(20),
             session_key INTEGER NOT NULL,
             deleted_in DATE DEFAULT NULL
         );
