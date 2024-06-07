@@ -1,7 +1,6 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// Função para executar um script e retornar uma Promise que resolve quando o script termina
 function runScript(script) {
     return new Promise((resolve, reject) => {
         const process = spawn('node', [script]);
@@ -24,7 +23,6 @@ function runScript(script) {
     });
 }
 
-// Executar os scripts em sequência
 async function runAllScripts() {
     try {
         const scripts = [
@@ -47,5 +45,4 @@ async function runAllScripts() {
     }
 }
 
-// Chama a função para executar todos os scripts
 runAllScripts();

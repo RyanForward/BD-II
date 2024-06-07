@@ -14,7 +14,7 @@ async function createDataBase(){
             country_code VARCHAR(3) NOT NULL,
             driver_number INTEGER NOT NULL,
             full_name VARCHAR(50) NOT NULL,
-            name_acronym VARCHAR(3) NOT NULL,
+            name_acronym VARCHAR(3) NOT NULL UNIQUE,
             session_key INTEGER NOT NULL,
             team_colour VARCHAR NOT NULL,
             team_name VARCHAR NOT NULL,
@@ -48,7 +48,7 @@ async function createDataBase(){
 
         await db.query(`
         CREATE TABLE sessions (
-            session_key INTEGER NOT NULL PRIMARY KEY,
+            session_key INTEGER PRIMARY KEY,
             session_name VARCHAR NOT NULL,
             session_type SESSION_TYPE NOT NULL,
             circuit_short_name VARCHAR NOT NULL,
