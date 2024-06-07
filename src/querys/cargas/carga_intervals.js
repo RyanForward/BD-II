@@ -99,9 +99,10 @@ async function main() {
         console.log(intervalsData.length);
 
         let intervals = intervalsData.filter(item =>
-            item.date != null ||
-            typeof(item.gap_to_leader) != number || 
-            item.driver_number != null ||
+            item.gap_to_leader != null &&
+            item.date != null &&
+            item.driver_number != null &&
+            item.interval != null &&
             item.session_key != null
         );
 
