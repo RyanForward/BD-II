@@ -14,7 +14,7 @@ async function createDataBase(){
             country_code VARCHAR(3) NOT NULL,
             driver_number INTEGER NOT NULL,
             full_name VARCHAR(50) NOT NULL,
-            name_acronym VARCHAR(3) NOT NULL UNIQUE,
+            name_acronym VARCHAR(3) NOT NULL,
             session_key INTEGER NOT NULL,
             team_colour VARCHAR NOT NULL,
             team_name VARCHAR NOT NULL,
@@ -28,7 +28,7 @@ async function createDataBase(){
             date DATE NOT NULL,
             driver_key INTEGER NOT NULL,
             gap_to_leader VARCHAR(20),
-            interval VARCHAR(20),
+            interval NUMERIC,
             session_key INTEGER NOT NULL,
             deleted_in DATE DEFAULT NULL
         );

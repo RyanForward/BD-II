@@ -82,6 +82,10 @@ async function getAllDataForSessions(sessions) {
     return allData;
 }
 
+function isNumeric(value) {
+    return !isNaN(value) && value !== null && value !== '' && isFinite(value);
+}
+
 async function main() {
     const totalStart = performance.now();
     try {
@@ -102,7 +106,7 @@ async function main() {
             item.gap_to_leader != null &&
             item.date != null &&
             item.driver_number != null &&
-            item.interval != null &&
+            (isNumeric(item.interval) || item.interval === null) &&
             item.session_key != null
         );
 
@@ -134,8 +138,6 @@ async function main() {
                 console.error('Erro ao tentar inserir lote de intervalos: ', e);
                 await db.query('ROLLBACK');
             }
-            const batchEnd = performance.now();
-            console.log(`Tempo para inserir um lote de intervalos: ${batchEnd - batchStart}ms`);
         }
 
         console.log('Carga dos intervalos foi efetuada com sucesso!');
