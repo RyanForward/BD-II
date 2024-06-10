@@ -27,8 +27,8 @@ async function createDataBase(){
             id BIGINT PRIMARY KEY,
             date DATE NOT NULL,
             driver_key INTEGER NOT NULL,
-            gap_to_leader VARCHAR NOT NULL,
-            interval VARCHAR NOT NULL,
+            gap_to_leader VARCHAR(20),
+            interval NUMERIC,
             session_key INTEGER NOT NULL,
             deleted_in DATE DEFAULT NULL
         );
@@ -48,7 +48,7 @@ async function createDataBase(){
 
         await db.query(`
         CREATE TABLE sessions (
-            session_key INTEGER NOT NULL PRIMARY KEY,
+            session_key INTEGER PRIMARY KEY,
             session_name VARCHAR NOT NULL,
             session_type SESSION_TYPE NOT NULL,
             circuit_short_name VARCHAR NOT NULL,

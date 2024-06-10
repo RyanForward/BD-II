@@ -1,45 +1,51 @@
-const https = require('https'); 
-const db = require('../../conn'); 
-const { generateID } = require('../tools/idGenerator'); 
+const https = require('https');
+const db = require('../../conn');
+const { generateID } = require('../tools/idGenerator');
+const { performance } = require('perf_hooks');
 
-const BATCH_SIZE = 1000; 
-const sessionsUrl = "https://api.openf1.org/v1/sessions"; 
+const BATCH_SIZE = 1000;
+const intervalsUrlTemplate = "https://api.openf1.org/v1/intervals?session_key=";
 
+async function getSessionIdsFromDB() {
+    const queryText = 'SELECT session_key FROM sessions';
+    try {
+        const res = await db.query(queryText);
+        return res.rows.map(row => row.session_key);
+    } catch (e) {
+        console.error('Erro ao tentar obter sessões do banco de dados: ', e);
+        throw e;
+    }
+}
 
 async function fetchData(url) {
     return new Promise((resolve, reject) => {
         https.get(url, (res) => {
             let data = '';
 
-           
             res.on('data', (chunk) => {
                 data += chunk;
             });
 
-           
             res.on('end', () => {
                 if (res.statusCode === 200) {
-                    resolve(JSON.parse(data)); 
+                    resolve(JSON.parse(data));
                 } else {
                     reject(new Error(`Failed to fetch data. Status code: ${res.statusCode}`));
                 }
             });
         }).on('error', (e) => {
-            reject(new Error(`Error: ${e.message}`)); 
+            reject(new Error(`Error: ${e.message}`));
         });
     });
 }
 
-
 async function insertIntervals(batch) {
-    
     const queryText = `
-        INSERT INTO intervals(id, date, driver_key, gap_to_leader, interval, session_key) 
-        VALUES 
+        INSERT INTO intervals(id, date, driver_key, gap_to_leader, interval, session_key)
+        VALUES
         ${batch.map((_, i) => `($${i * 6 + 1}, $${i * 6 + 2}, $${i * 6 + 3}, $${i * 6 + 4}, $${i * 6 + 5}, $${i * 6 + 6})`).join(', ')}
     `;
 
-    // Valores da query
     const queryValues = [];
     batch.forEach(item => {
         queryValues.push(
@@ -53,92 +59,95 @@ async function insertIntervals(batch) {
     });
 
     try {
-        await db.query(queryText, queryValues); 
+        await db.query(queryText, queryValues);
     } catch (e) {
         console.error('Erro ao tentar inserir intervalo: ', e);
         throw e;
     }
 }
 
-// Função para obter todas as sessões
-async function getAllSessions(url) {
-    try {
-        const sessionsData = await fetchData(url); 
-        return sessionsData.map(session => session.session_key); 
-    } catch (e) {
-        console.error('Erro ao tentar obter sessões: ', e);
-        throw e;
-    }
-}
-
-
 async function getAllDataForSessions(sessions) {
     let allData = [];
     for (const sessionKey of sessions) {
-        const url = `https://api.openf1.org/v1/intervals?session_key=${sessionKey}`;
+        const url = `${intervalsUrlTemplate}${sessionKey}`;
         try {
-            const data = await fetchData(url); 
+            const data = await fetchData(url);
             if (data && data.length > 0) {
-                allData = [...allData, ...data]; 
+                allData = [...allData, ...data];
             }
         } catch (e) {
             console.error(`Erro ao tentar obter dados para a sessão ${sessionKey}: `, e);
         }
     }
-    return allData; 
+    return allData;
+}
+
+function isNumeric(value) {
+    return !isNaN(value) && value !== null && value !== '' && isFinite(value);
 }
 
 async function main() {
+    const totalStart = performance.now();
     try {
-        const sessionKeys = await getAllSessions(sessionsUrl); 
-        const intervalsData = await getAllDataForSessions(sessionKeys); 
-        console.log(intervalsData.length);
-        let intervals = [];
+        await db.connect();
 
-        for (const item of intervalsData) {
-            if (
-                item.gap_to_leader == null ||
-                item.date == null ||
-                item.driver_number == null ||
-                item.interval == null ||
-                item.session_key == null
-            ) {
-                continue;
-            }
-            intervals.push(item); 
-        }
+        const sessionStart = performance.now();
+        const sessionKeys = await getSessionIdsFromDB();
+        const sessionEnd = performance.now();
+        console.log(`Tempo para obter as sessões do banco de dados: ${sessionEnd - sessionStart}ms`);
+
+        const fetchStart = performance.now();
+        const intervalsData = await getAllDataForSessions(sessionKeys);
+        const fetchEnd = performance.now();
+        console.log(`Tempo para buscar todos os dados das sessões: ${fetchEnd - fetchStart}ms`);
+        console.log(intervalsData.length);
+
+        let intervals = intervalsData.filter(item =>
+            item.gap_to_leader != null &&
+            item.date != null &&
+            item.driver_number != null &&
+            (isNumeric(item.interval) || item.interval === null) &&
+            item.session_key != null
+        );
 
         console.log(intervals.length);
-        await db.connect(); 
-        await db.query('BEGIN'); 
-        let counter = 0;
-        let batch = [];
 
-        for (const item of intervals) {
+        let counter = 0;
+        const batches = intervals.reduce((acc, item) => {
             const id = generateID(counter);
             counter++;
             item.id = id;
-            batch.push(item);
 
-            if (batch.length === BATCH_SIZE) {
-                await insertIntervals(batch); 
-                batch = [];
+            const lastBatch = acc[acc.length - 1];
+            if (lastBatch && lastBatch.length < BATCH_SIZE) {
+                lastBatch.push(item);
+            } else {
+                acc.push([item]);
+            }
+
+            return acc;
+        }, []);
+
+        for (const batch of batches) {
+            const batchStart = performance.now();
+            try {
+                await db.query('BEGIN');
+                await insertIntervals(batch);
+                await db.query('COMMIT');
+            } catch (e) {
+                console.error('Erro ao tentar inserir lote de intervalos: ', e);
+                await db.query('ROLLBACK');
             }
         }
 
-        
-        if (batch.length > 0) {
-            await insertIntervals(batch);
-        }
-
-        await db.query('COMMIT'); 
         console.log('Carga dos intervalos foi efetuada com sucesso!');
     } catch (e) {
-        await db.query('ROLLBACK'); 
         console.error('Houve um erro: ', e);
     } finally {
-        await db.end(); 
+        const totalEnd = performance.now();
+        await db.end();
+        console.log(`Tempo total de execução: ${totalEnd - totalStart}ms`);
     }
 }
 
-main(); 
+main();
