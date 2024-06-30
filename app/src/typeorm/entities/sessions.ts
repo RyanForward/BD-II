@@ -29,9 +29,9 @@ export class Session {
   @Column({ name: 'gmt_offset' })
   gmtOffset!: Date;
 
-  @Column()
+  @Column({name: 'location'})
   location!: string;
 
-  @Column()
+  @Column({name: 'year'})
   year!: number;
 }
